@@ -3,18 +3,17 @@ import {
   UserPlus, Search, ShieldCheck, 
   User, Trash2, ChevronLeft, ChevronRight 
 } from 'lucide-react';
+// Import koneksi db dari file firebaseConfig kamu
+import { db } from '../firebaseConfig'; 
+import { 
+  collection, addDoc, onSnapshot, 
+  query, deleteDoc, doc, orderBy 
+} from 'firebase/firestore';
 
 const DataAnggota = () => {
   // Database State
-  const [pengurus, setPengurus] = useState(() => {
-    const saved = localStorage.getItem('data_pengurus');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [anggota, setAnggota] = useState(() => {
-    const saved = localStorage.getItem('data_anggota');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [pengurus, setPengurus] = useState([]);
+  const [anggota, setAnggota] = useState([]);
 
   // UI & Pagination State
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,40 +25,63 @@ const DataAnggota = () => {
     nama: "", peran: "Anggota", jabatan: "", status: "Aktif"
   });
 
+  // LOAD DATA DARI FIREBASE (REAL-TIME)
   useEffect(() => {
-    localStorage.setItem('data_pengurus', JSON.stringify(pengurus));
-  }, [pengurus]);
+    // Ambil Data Pengurus
+    const qPengurus = query(collection(db, "pengurus"), orderBy("nama", "asc"));
+    const unsubPengurus = onSnapshot(qPengurus, (snapshot) => {
+      setPengurus(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
 
-  useEffect(() => {
-    localStorage.setItem('data_anggota', JSON.stringify(anggota));
-  }, [anggota]);
+    // Ambil Data Anggota
+    const qAnggota = query(collection(db, "anggota"), orderBy("nama", "asc"));
+    const unsubAnggota = onSnapshot(qAnggota, (snapshot) => {
+      setAnggota(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => {
+      unsubPengurus();
+      unsubAnggota();
+    };
+  }, []);
 
   const formatCaps = (text) => text ? text.toString().toUpperCase() : '';
 
-  const handleSave = (e) => {
+  // SIMPAN KE FIREBASE
+  const handleSave = async (e) => {
     e.preventDefault();
-    const newData = {
-      id: Date.now(),
+    const collectionName = formData.peran === "Pengurus" ? "pengurus" : "anggota";
+    
+    const dataToSave = {
       nama: formatCaps(formData.nama.trim()),
-      status: formData.status
+      status: formData.status,
+      createdAt: new Date().toISOString()
     };
 
     if (formData.peran === "Pengurus") {
-      setPengurus([...pengurus, { ...newData, jabatan: formatCaps(formData.jabatan.trim()) }]);
-    } else {
-      setAnggota([...anggota, newData]);
+      dataToSave.jabatan = formatCaps(formData.jabatan.trim());
     }
 
-    setFormData({ nama: "", peran: "Anggota", jabatan: "", status: "Aktif" });
-    setShowModal(false);
-    setCurrentPage(1);
+    try {
+      await addDoc(collection(db, collectionName), dataToSave);
+      setFormData({ nama: "", peran: "Anggota", jabatan: "", status: "Aktif" });
+      setShowModal(false);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Gagal menyimpan:", error);
+      alert("Terjadi kesalahan saat menyimpan data.");
+    }
   };
 
-  const deleteData = (id, tipe) => {
-    if (window.confirm("HAPUS DATA?")) {
-      tipe === "Pengurus" 
-        ? setPengurus(pengurus.filter(p => p.id !== id))
-        : setAnggota(anggota.filter(a => a.id !== id));
+  // HAPUS DARI FIREBASE
+  const deleteData = async (id, tipe) => {
+    if (window.confirm("HAPUS DATA PERSONEL INI?")) {
+      const collectionName = tipe === "Pengurus" ? "pengurus" : "anggota";
+      try {
+        await deleteDoc(doc(db, collectionName, id));
+      } catch (error) {
+        console.error("Gagal menghapus:", error);
+      }
     }
   };
 
@@ -93,7 +115,7 @@ const DataAnggota = () => {
       <div className="space-y-4">
         <div className="flex items-center gap-2 opacity-50">
           <ShieldCheck size={16} />
-          <h2 className="text-[10px] font-black uppercase tracking-widest">Struktur Inti</h2>
+          <h2 className="text-[10px] font-black uppercase tracking-widest">Struktur Inti (Pengurus)</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {pengurus.length > 0 ? pengurus.map((p) => (
@@ -112,7 +134,7 @@ const DataAnggota = () => {
               </button>
             </div>
           )) : (
-            <div className="col-span-full py-4 text-center text-[9px] font-bold text-zinc-300 uppercase tracking-widest">Belum Ada Pengurus</div>
+            <div className="col-span-full py-10 bg-white border border-dashed rounded-2xl text-center text-[9px] font-bold text-zinc-300 uppercase tracking-widest">Belum Ada Pengurus Terdaftar</div>
           )}
         </div>
       </div>
@@ -163,7 +185,9 @@ const DataAnggota = () => {
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="3" className="py-12 text-center text-[9px] font-black text-zinc-300 uppercase tracking-widest">Data Tidak Ditemukan</td>
+                    <td colSpan="3" className="py-20 text-center text-[9px] font-black text-zinc-300 uppercase tracking-widest">
+                      {searchTerm ? "HASIL PENCARIAN NIHIL" : "DATA CLOUD KOSONG"}
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -209,7 +233,7 @@ const DataAnggota = () => {
               <input required placeholder="NAMA LENGKAP" className="w-full p-3.5 bg-zinc-50 rounded-xl text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-black"
                 value={formData.nama} onChange={(e) => setFormData({...formData, nama: e.target.value})} />
               {formData.peran === "Pengurus" && (
-                <input required placeholder="JABATAN" className="w-full p-3.5 bg-zinc-50 rounded-xl text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-black"
+                <input required placeholder="JABATAN (MISAL: KETUA)" className="w-full p-3.5 bg-zinc-50 rounded-xl text-[10px] font-bold uppercase outline-none focus:ring-1 focus:ring-black"
                   value={formData.jabatan} onChange={(e) => setFormData({...formData, jabatan: e.target.value})} />
               )}
               <div className="grid grid-cols-2 gap-2">

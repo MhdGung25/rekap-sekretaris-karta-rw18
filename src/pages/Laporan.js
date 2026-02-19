@@ -4,14 +4,15 @@ import {
   X, Trash2, LayoutGrid, Calendar, Target,
   Search 
 } from 'lucide-react';
+// Import koneksi db dari firebaseConfig
+import { db } from '../firebaseConfig'; 
+import { 
+  collection, addDoc, onSnapshot, 
+  query, deleteDoc, doc, orderBy 
+} from 'firebase/firestore';
 
 const Laporan = () => {
-  // 1. Inisialisasi State (Kosong agar siap input manual)
-  const [dataLaporan, setDataLaporan] = useState(() => {
-    const saved = localStorage.getItem('db_laporan_kerja');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [dataLaporan, setDataLaporan] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -23,39 +24,56 @@ const Laporan = () => {
     deskripsi: ""
   });
 
-  // 2. Simpan Data Otomatis ke LocalStorage
+  // LOAD DATA DARI FIREBASE (REAL-TIME)
   useEffect(() => {
-    localStorage.setItem('db_laporan_kerja', JSON.stringify(dataLaporan));
-  }, [dataLaporan]);
+    const q = query(collection(db, "laporan"), orderBy("tgl", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setDataLaporan(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const capitalize = (str) => str.replace(/\b\w/g, (char) => char.toUpperCase());
 
-  const handleSave = (e) => {
+  // SIMPAN KE FIREBASE
+  const handleSave = async (e) => {
     e.preventDefault();
-    const newLaporan = {
-      id: Date.now(),
-      ...formData,
-      judul: capitalize(formData.judul.trim())
-    };
-
-    setDataLaporan([newLaporan, ...dataLaporan]);
-    setShowModal(false);
-    // Reset form ke default
-    setFormData({ 
-      judul: "", 
-      tgl: new Date().toISOString().split('T')[0], 
-      progress: 0, 
-      deskripsi: "" 
-    });
-  };
-
-  const deleteLaporan = (id) => {
-    if (window.confirm("Hapus laporan ini secara permanen dari database lokal?")) {
-      setDataLaporan(dataLaporan.filter(l => l.id !== id));
+    try {
+      await addDoc(collection(db, "laporan"), {
+        ...formData,
+        judul: capitalize(formData.judul.trim()),
+        createdAt: new Date().toISOString()
+      });
+      
+      setShowModal(false);
+      setFormData({ 
+        judul: "", 
+        tgl: new Date().toISOString().split('T')[0], 
+        progress: 0, 
+        deskripsi: "" 
+      });
+    } catch (error) {
+      console.error("Gagal simpan laporan:", error);
+      alert("Terjadi kesalahan koneksi database.");
     }
   };
 
-  // 3. Logic Filter & Search
+  // HAPUS DARI FIREBASE
+  const deleteLaporan = async (id) => {
+    if (window.confirm("Hapus laporan ini secara permanen dari database cloud?")) {
+      try {
+        await deleteDoc(doc(db, "laporan", id));
+      } catch (error) {
+        console.error("Gagal menghapus:", error);
+      }
+    }
+  };
+
   const filteredData = dataLaporan.filter(l => {
     const matchSearch = l.judul.toLowerCase().includes(searchTerm.toLowerCase());
     if (filterStatus === "Selesai") return matchSearch && l.progress === 100;
@@ -185,20 +203,16 @@ const Laporan = () => {
           ))
         ) : (
           <div className="col-span-full py-32 border-2 border-dashed border-zinc-100 rounded-[50px] flex flex-col items-center justify-center">
-            <div className="p-6 bg-zinc-50 rounded-full text-zinc-200 mb-4">
-              <FileText size={40} />
-            </div>
-            <p className="text-zinc-400 text-[11px] font-black uppercase tracking-[0.4em]">Belum Ada Laporan</p>
+            <p className="text-zinc-400 text-[11px] font-black uppercase tracking-[0.4em]">Menghubungkan ke Cloud...</p>
           </div>
         )}
       </div>
 
       {/* MODAL INPUT */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
-          
-          <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl animate-in slide-in-from-bottom sm:zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-8 sticky top-0 bg-white pb-4 z-10 border-b border-zinc-50">
               <h2 className="text-2xl font-black uppercase tracking-tighter text-zinc-900">Buat Laporan</h2>
               <button onClick={() => setShowModal(false)} className="p-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors"><X size={20} /></button>
@@ -235,8 +249,8 @@ const Laporan = () => {
                   value={formData.deskripsi} onChange={(e) => setFormData({...formData, deskripsi: e.target.value})}></textarea>
               </div>
 
-              <button type="submit" className="w-full bg-black text-white p-5 rounded-[24px] font-black uppercase tracking-widest text-xs mt-4 hover:shadow-2xl transition-all active:scale-95">
-                Simpan Permanen
+              <button type="submit" className="w-full bg-black text-white p-5 rounded-[24px] font-black uppercase tracking-widest text-xs mt-4 hover:shadow-2xl transition-all">
+                Simpan ke Cloud
               </button>
             </form>
           </div>
