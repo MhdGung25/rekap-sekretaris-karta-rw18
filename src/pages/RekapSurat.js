@@ -22,13 +22,14 @@ const RekapSurat = () => {
     noSurat: "",      
     perihal: "",      
     tanggal: "",      
-    status: "Masuk",  
+    status: "Umum",  
     fileBase64: null,
     fileName: "",
     fileType: "",
     isiManual: ""
   });
 
+  // Mencegah auto-zoom di perangkat mobile
   useEffect(() => {
     const meta = document.createElement('meta');
     meta.name = "viewport";
@@ -36,6 +37,7 @@ const RekapSurat = () => {
     document.getElementsByTagName('head')[0].appendChild(meta);
   }, []);
 
+  // Sinkronisasi data dari Firestore
   useEffect(() => {
     setIsLoading(true);
     const qSurat = query(collection(db, "rekap_surat"), orderBy("createdAt", "desc"));
@@ -53,7 +55,7 @@ const RekapSurat = () => {
     return () => { unsubSurat(); unsubAbsen(); };
   }, [activeTab]);
 
-  // Fungsi Kapitalisasi: Hanya huruf pertama kalimat yang besar
+  // Fungsi Kapitalisasi: Hanya huruf pertama yang besar
   const autoFormatText = (str) => {
     if (!str) return "";
     const clean = str.toLowerCase();
@@ -102,7 +104,7 @@ const RekapSurat = () => {
   const resetForm = () => {
     setFormData({ 
       noSurat: "", perihal: "", tanggal: "", 
-      status: activeTab === 'surat' ? "Masuk" : "Umum", 
+      status: "Umum", 
       fileBase64: null, fileName: "", fileType: "", isiManual: "" 
     });
   };
@@ -127,6 +129,7 @@ const RekapSurat = () => {
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 text-zinc-800 pb-20">
       
+      {/* TAB SELECTOR */}
       <div className="flex bg-zinc-100 p-1 rounded-2xl w-fit border border-zinc-200 mx-auto sm:mx-0">
         <button onClick={() => { setActiveTab('surat'); resetForm(); }}
           className={`px-5 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 ${activeTab === 'surat' ? 'bg-white shadow-sm text-black' : 'text-zinc-500'}`}>
@@ -138,6 +141,7 @@ const RekapSurat = () => {
         </button>
       </div>
 
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="p-4 bg-black text-white rounded-[20px] shadow-xl">
@@ -154,6 +158,7 @@ const RekapSurat = () => {
         </button>
       </div>
 
+      {/* SEARCH & TABLE */}
       <div className="bg-white border border-zinc-100 rounded-[32px] overflow-hidden shadow-sm">
         <div className="p-4 md:p-5 flex items-center gap-4 border-b border-zinc-50">
           <Search size={20} className="text-zinc-400" />
@@ -163,7 +168,7 @@ const RekapSurat = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px]">
+          <table className="w-full text-left border-collapse min-w-[600px]">
             <thead>
               <tr className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-400 bg-zinc-50/50">
                 <th className="px-8 py-5">Perihal / Keterangan</th>
@@ -208,6 +213,7 @@ const RekapSurat = () => {
         </div>
       </div>
 
+      {/* MODAL TAMBAH DATA */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
@@ -246,7 +252,7 @@ const RekapSurat = () => {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
-                  {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Keterangan Tambahan'}
+                  {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Perihal / Keterangan'}
                 </label>
                 <input type="text" placeholder="..." 
                   className="w-full p-4.5 bg-zinc-50 border border-zinc-100 focus:border-black focus:bg-white rounded-2xl outline-none text-base font-semibold transition-all" 
