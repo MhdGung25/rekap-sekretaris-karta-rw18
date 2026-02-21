@@ -223,7 +223,7 @@ const RekapSurat = () => {
       </div>
 
       {/* MODAL TAMBAH DATA */}
-      {showModal && (
+    {showModal && (
   <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
     <div className="bg-white w-full max-w-xl rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[92vh] transition-all border-t border-zinc-100">
@@ -244,28 +244,7 @@ const RekapSurat = () => {
 
       <form onSubmit={handleSave} className="space-y-6">
         
-        {/* --- PENYATUAN PILIHAN KATEGORI --- */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
-            Kategori {activeTab === 'surat' ? 'Surat' : 'Absensi'}
-          </label>
-          <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
-            {(activeTab === 'surat' ? ['Masuk', 'Keluar'] : ['Anggota', 'Pengurus']).map((type) => (
-              <button 
-                key={type} 
-                type="button" 
-                onClick={() => setFormData({...formData, status: type})}
-                className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all ${
-                  formData.status === type 
-                  ? 'bg-white text-black shadow-sm' 
-                  : 'text-zinc-400 hover:text-zinc-600'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Kategori Absensi/Surat telah dihapus sesuai permintaan */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
