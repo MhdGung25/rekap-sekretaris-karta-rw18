@@ -224,85 +224,117 @@ const RekapSurat = () => {
 
       {/* MODAL TAMBAH DATA */}
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
-          <div className="bg-white w-full max-w-xl rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[92vh] transition-all border-t border-zinc-100">
-            <div className="flex justify-between items-center mb-8">
-               <h2 className="text-xl font-bold text-zinc-900 tracking-tight">
-                {activeTab === 'surat' ? 'Arsip Surat Baru' : 'Rekap Absen Baru'}
-               </h2>
-               <button onClick={() => setShowModal(false)} className="p-2.5 bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white rounded-full transition-all active:scale-90">
-                 <X size={20} />
-               </button>
-            </div>
+  <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
+    <div className="bg-white w-full max-w-xl rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[92vh] transition-all border-t border-zinc-100">
+      
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h2 className="text-xl font-bold text-zinc-900 tracking-tight">
+            {activeTab === 'surat' ? 'Arsip Surat Baru' : 'Rekap Absensi Baru'}
+          </h2>
+          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">
+            Input data ke database internal
+          </p>
+        </div>
+        <button onClick={() => setShowModal(false)} className="p-2.5 bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white rounded-full transition-all active:scale-90">
+          <X size={20} />
+        </button>
+      </div>
 
-            <form onSubmit={handleSave} className="space-y-6">
-              <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
-                {(activeTab === 'surat' ? ['Masuk', 'Keluar'] : ['Anggota', 'Pengurus']).map((type) => (
-                  <button key={type} type="button" onClick={() => setFormData({...formData, status: type})}
-                    className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all ${formData.status === type ? 'bg-white text-black shadow-sm' : 'text-zinc-400'}`}>
-                    {type} 
-                  </button>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
-                    {activeTab === 'surat' ? 'No. Surat' : 'Periode (Bulan/Tahun)'}
-                  </label>
-                  {/* text-base (16px) untuk ANTI ZOOM HP */}
-                  <input type="text" placeholder={activeTab === 'surat' ? "..." : "JANUARI 2026"} 
-                    className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-bold" 
-                    value={formData.noSurat} onChange={(e) => setFormData({...formData, noSurat: e.target.value})} required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
-                    {activeTab === 'surat' ? 'Tanggal Surat' : 'Tanggal Upload'}
-                  </label>
-                  <input type="date" 
-                    className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-bold text-zinc-600" 
-                    value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} required />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
-                  {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Keterangan Tambahan'}
-                </label>
-                <input type="text" placeholder="..." 
-                  className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-semibold" 
-                  value={formData.perihal} onChange={(e) => setFormData({...formData, perihal: e.target.value})} />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Upload File Dokumen</label>
-                <div className="relative group">
-                  <input type="file" accept=".pdf,image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <div className={`w-full p-8 border-2 border-dashed rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all ${formData.fileName ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-zinc-50'}`}>
-                    <Download size={24} className={formData.fileName ? 'text-black' : 'text-zinc-300'} />
-                    <div className="text-center">
-                      <p className="text-[11px] font-black text-zinc-900">{formData.fileName || "Pilih File (PDF/Gambar)"}</p>
-                      <p className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-tighter">Maksimal 2MB</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Ringkasan Isi (Opsional)</label>
-                <textarea rows="4" placeholder="Ketik ringkasan jika tidak ada file..." 
-                  className="w-full p-5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-[28px] outline-none text-base font-medium text-zinc-700 resize-none" 
-                  value={formData.isiManual} onChange={(e) => setFormData({...formData, isiManual: e.target.value})} />
-              </div>
-
-              <button type="submit" className="w-full bg-black text-white p-5 rounded-[28px] font-black text-xs tracking-widest shadow-xl shadow-zinc-200 hover:bg-zinc-800 transition-all active:scale-95 uppercase">
-                Simpan ke Database
+      <form onSubmit={handleSave} className="space-y-6">
+        
+        {/* --- PENYATUAN PILIHAN KATEGORI --- */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+            Kategori {activeTab === 'surat' ? 'Surat' : 'Absensi'}
+          </label>
+          <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
+            {(activeTab === 'surat' ? ['Masuk', 'Keluar'] : ['Anggota', 'Pengurus']).map((type) => (
+              <button 
+                key={type} 
+                type="button" 
+                onClick={() => setFormData({...formData, status: type})}
+                className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all ${
+                  formData.status === type 
+                  ? 'bg-white text-black shadow-sm' 
+                  : 'text-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                {type}
               </button>
-            </form>
+            ))}
           </div>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+              {activeTab === 'surat' ? 'No. Surat' : 'Periode (Bulan/Tahun)'}
+            </label>
+            <input 
+              type="text" 
+              placeholder={activeTab === 'surat' ? "Contoh: 001/KARTA/2026" : "Contoh: Januari 2026"} 
+              className="w-full p-4.5 bg-zinc-50 border border-zinc-100 focus:border-black focus:bg-white rounded-2xl outline-none text-base font-bold transition-all" 
+              value={formData.noSurat} 
+              onChange={(e) => setFormData({...formData, noSurat: e.target.value})} 
+              required 
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+              {activeTab === 'surat' ? 'Tanggal Surat' : 'Tanggal Upload'}
+            </label>
+            <input 
+              type="date" 
+              className="w-full p-4.5 bg-zinc-50 border border-zinc-100 focus:border-black focus:bg-white rounded-2xl outline-none text-base font-bold text-zinc-600 transition-all" 
+              value={formData.tanggal} 
+              onChange={(e) => setFormData({...formData, tanggal: e.target.value})} 
+              required 
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
+            {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Keterangan Tambahan'}
+          </label>
+          <input 
+            type="text" 
+            placeholder="..." 
+            className="w-full p-4.5 bg-zinc-50 border border-zinc-100 focus:border-black focus:bg-white rounded-2xl outline-none text-base font-semibold transition-all" 
+            value={formData.perihal} 
+            onChange={(e) => setFormData({...formData, perihal: e.target.value})} 
+          />
+        </div>
+
+        {/* --- FILE UPLOAD --- */}
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">File Dokumen</label>
+          <div className="relative group">
+            <input type="file" accept=".pdf,image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+            <div className={`w-full p-8 border-2 border-dashed rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all ${
+              formData.fileName ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-zinc-50 group-hover:border-zinc-400'
+            }`}>
+              <Download size={24} className={formData.fileName ? 'text-black' : 'text-zinc-300'} />
+              <div className="text-center">
+                <p className="text-[11px] font-black text-zinc-900">
+                  {formData.fileName || "Pilih File (PDF/Gambar)"}
+                </p>
+                <p className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-tighter">Maksimal 2MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" className="w-full bg-black text-white p-5 rounded-[28px] font-black text-xs tracking-widest shadow-xl shadow-zinc-200 hover:bg-zinc-800 transition-all active:scale-95 uppercase mt-4">
+          Simpan ke Database
+        </button>
+
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };
