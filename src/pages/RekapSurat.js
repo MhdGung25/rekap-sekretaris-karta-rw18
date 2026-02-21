@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Mail, Plus, Search, FileText, 
   Download, Trash2, 
-  CalendarCheck, X, Image as ImageIcon, Type
+  CalendarCheck, X, Image as ImageIcon, Type 
 } from 'lucide-react'; 
 import { db } from '../firebaseConfig'; 
 import { 
@@ -18,12 +18,11 @@ const RekapSurat = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   
-  // State Form yang lebih dinamis
   const [formData, setFormData] = useState({
-    noSurat: "",      // Di Absen jadi 'Periode'
-    perihal: "",      // Di Absen jadi 'Keterangan Tambahan'
-    tanggal: "",      // Tanggal Surat / Tanggal Upload
-    status: "Masuk",  // Masuk/Keluar untuk Surat, Anggota/Pengurus untuk Absen
+    noSurat: "",      
+    perihal: "",      
+    tanggal: "",      
+    status: "Masuk",  
     fileBase64: null,
     fileName: "",
     fileType: "",
@@ -100,11 +99,15 @@ const RekapSurat = () => {
   };
 
   const handleViewFile = (item) => {
-    const win = window.open();
-    if (item.fileType === 'pdf') {
-      win.document.write(`<iframe src="${item.fileBase64}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe>`);
-    } else {
-      win.document.write(`<html><body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center;"><img src="${item.fileBase64}" style="max-width:100%; max-height:100vh;" /></body></html>`);
+    if (item.fileBase64) {
+      const win = window.open();
+      if (item.fileType === 'pdf') {
+        win.document.write(`<iframe src="${item.fileBase64}" frameborder="0" style="border:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+      } else {
+        win.document.write(`<html><body style="margin:0; background:#000; display:flex; justify-content:center; align-items:center;"><img src="${item.fileBase64}" style="max-width:100%; max-height:100vh;" /></body></html>`);
+      }
+    } else if (item.isiManual) {
+      alert(`Catatan Manual:\n${item.isiManual}`);
     }
   };
 
@@ -160,7 +163,7 @@ const RekapSurat = () => {
                 <th className="px-8 py-5">{activeTab === 'surat' ? 'Nomor Surat' : 'Periode'}</th>
                 <th className="px-6 py-5">Tanggal</th>
                 <th className="px-6 py-5 text-center">Kategori</th>
-                <th className="px-6 py-5">File</th>
+                <th className="px-6 py-5">Media</th>
                 <th className="px-8 py-5 text-right">Aksi</th>
               </tr>
             </thead>
@@ -185,12 +188,14 @@ const RekapSurat = () => {
                       </span>
                     </td>
                     <td className="px-6 py-6">
-                      {s.fileBase64 ? (
-                        <button onClick={() => handleViewFile(s)} className="flex items-center gap-2 text-[11px] font-bold text-zinc-800 hover:underline">
-                          {s.fileType === 'pdf' ? <FileText size={14} className="text-rose-500"/> : <ImageIcon size={14} className="text-blue-500"/>}
-                          LIHAT FILE
+                      <div className="flex items-center gap-3">
+                        {s.fileType === 'pdf' && <FileText size={16} className="text-rose-500" />}
+                        {s.fileType === 'image' && <ImageIcon size={16} className="text-blue-500" />}
+                        {s.isiManual && <Type size={16} className="text-zinc-400" />}
+                        <button onClick={() => handleViewFile(s)} className="text-[11px] font-bold text-zinc-800 hover:underline">
+                          LIHAT
                         </button>
-                      ) : <span className="text-[10px] text-zinc-300 font-bold">TIDAK ADA FILE</span>}
+                      </div>
                     </td>
                     <td className="px-8 py-6 text-right">
                       <button onClick={() => { if(window.confirm("Hapus?")) deleteDoc(doc(db, activeTab === 'surat' ? "rekap_surat" : "rekap_absen", s.id)) }} 
@@ -206,12 +211,11 @@ const RekapSurat = () => {
         </div>
       </div>
 
-      {/* MODAL (LOGIKA TERPISAH) */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
           <div className="bg-white w-full max-w-xl rounded-t-[32px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[95vh]">
-            
             <div className="flex justify-between items-center mb-8">
                <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">
                 {activeTab === 'surat' ? 'Tambah Arsip Surat' : 'Tambah Rekap Absensi'}
@@ -222,7 +226,6 @@ const RekapSurat = () => {
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
-              {/* Selector Kategori (Masuk/Keluar vs Anggota/Pengurus) */}
               <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
                 {(activeTab === 'surat' ? ['Masuk', 'Keluar'] : ['Anggota', 'Pengurus']).map((type) => (
                   <button key={type} type="button" onClick={() => setFormData({...formData, status: type})}
@@ -232,7 +235,6 @@ const RekapSurat = () => {
                 ))}
               </div>
 
-              {/* Input Baris 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
@@ -250,7 +252,6 @@ const RekapSurat = () => {
                 </div>
               </div>
 
-              {/* Keterangan */}
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
                   {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Keterangan Tambahan'}
@@ -259,7 +260,6 @@ const RekapSurat = () => {
                   value={formData.perihal} onChange={(e) => setFormData({...formData, perihal: e.target.value})} />
               </div>
 
-              {/* Upload File */}
               <div className="space-y-2">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
                   {activeTab === 'surat' ? 'File PDF / Foto' : 'File Absen (PDF)'}
@@ -273,14 +273,11 @@ const RekapSurat = () => {
                 </div>
               </div>
 
-              {/* Catatan Manual (Hanya untuk Surat) */}
-              {activeTab === 'surat' && (
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">Atau Ketik Manual (Isi Surat)</label>
-                  <textarea rows="3" placeholder="Ketik ringkasan isi surat di sini..." className="w-full p-4 bg-zinc-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-medium text-sm text-zinc-700 resize-none" 
-                    value={formData.isiManual} onChange={(e) => setFormData({...formData, isiManual: e.target.value})} />
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">Atau Ketik Manual</label>
+                <textarea rows="3" placeholder="Ketik ringkasan di sini..." className="w-full p-4 bg-zinc-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-medium text-sm text-zinc-700 resize-none" 
+                  value={formData.isiManual} onChange={(e) => setFormData({...formData, isiManual: e.target.value})} />
+              </div>
 
               <button type="submit" className="w-full bg-black text-white p-5 rounded-[24px] font-bold text-sm shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
                 Simpan ke Database
