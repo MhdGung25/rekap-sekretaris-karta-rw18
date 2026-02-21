@@ -29,6 +29,14 @@ const RekapSurat = () => {
     isiManual: ""
   });
 
+  // 1. FIX: MENCEGAH AUTO ZOOM PADA MOBILE
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = "viewport";
+    meta.content = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0";
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  }, []);
+
   useEffect(() => {
     setIsLoading(true);
     const qSurat = query(collection(db, "rekap_surat"), orderBy("createdAt", "desc"));
@@ -118,16 +126,16 @@ const RekapSurat = () => {
   );
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 text-zinc-800">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8 text-zinc-800 pb-20">
       
       {/* TAB SELECTOR */}
-      <div className="flex bg-zinc-100 p-1.5 rounded-2xl w-fit border border-zinc-200">
+      <div className="flex bg-zinc-100 p-1 rounded-2xl w-fit border border-zinc-200 mx-auto sm:mx-0">
         <button onClick={() => { setActiveTab('surat'); resetForm(); }}
-          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'surat' ? 'bg-white shadow-md text-black' : 'text-zinc-500'}`}>
+          className={`px-5 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 ${activeTab === 'surat' ? 'bg-white shadow-sm text-black' : 'text-zinc-500'}`}>
           <Mail size={14}/> Arsip Surat
         </button>
         <button onClick={() => { setActiveTab('absen'); resetForm(); }}
-          className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${activeTab === 'absen' ? 'bg-white shadow-md text-black' : 'text-zinc-500'}`}>
+          className={`px-5 py-2.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-2 ${activeTab === 'absen' ? 'bg-white shadow-sm text-black' : 'text-zinc-500'}`}>
           <CalendarCheck size={14}/> Rekap Absensi
         </button>
       </div>
@@ -135,31 +143,34 @@ const RekapSurat = () => {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="p-4 bg-black text-white rounded-2xl shadow-xl">
-            {activeTab === 'surat' ? <Mail size={28} /> : <CalendarCheck size={28} />}
+          <div className="p-4 bg-black text-white rounded-[20px] shadow-xl">
+            {activeTab === 'surat' ? <Mail size={24} /> : <CalendarCheck size={24} />}
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-zinc-900">{activeTab === 'surat' ? 'Arsip Surat' : 'Rekap Absensi'}</h1>
-            <p className="text-zinc-500 text-xs font-medium mt-1 uppercase tracking-wider">{currentData.length} Data Tersimpan</p>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{activeTab === 'surat' ? 'Arsip Surat' : 'Rekap Absensi'}</h1>
+            <p className="text-zinc-500 text-[10px] font-bold mt-0.5 uppercase tracking-widest">{currentData.length} Data Tersimpan</p>
           </div>
         </div>
         <button onClick={() => { resetForm(); setShowModal(true); }}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all shadow-lg">
+          className="flex items-center justify-center gap-2 bg-black text-white px-6 py-4 rounded-2xl font-bold text-sm hover:bg-zinc-800 transition-all active:scale-95 shadow-lg">
           <Plus size={18} /> Tambah Baru
         </button>
       </div>
 
       {/* SEARCH & TABLE */}
-      <div className="bg-white border border-zinc-100 rounded-[28px] overflow-hidden shadow-sm">
+      <div className="bg-white border border-zinc-100 rounded-[32px] overflow-hidden shadow-sm">
         <div className="p-4 md:p-5 flex items-center gap-4 border-b border-zinc-50">
           <Search size={20} className="text-zinc-400" />
-          <input type="text" placeholder={`Cari ${activeTab === 'surat' ? 'surat' : 'rekap'}...`} className="bg-transparent outline-none text-sm w-full font-semibold" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          {/* FONT SIZE 16px (text-base) untuk ANTI ZOOM */}
+          <input type="text" placeholder={`Cari ${activeTab === 'surat' ? 'surat' : 'rekap'}...`} 
+            className="bg-transparent outline-none text-base w-full font-semibold placeholder:text-zinc-300" 
+            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="text-[11px] uppercase tracking-wider font-bold text-zinc-400 bg-zinc-50/30">
+              <tr className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-400 bg-zinc-50/50">
                 <th className="px-8 py-5">{activeTab === 'surat' ? 'Nomor Surat' : 'Periode'}</th>
                 <th className="px-6 py-5">Tanggal</th>
                 <th className="px-6 py-5 text-center">Kategori</th>
@@ -167,22 +178,22 @@ const RekapSurat = () => {
                 <th className="px-8 py-5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-50">
+            <tbody className="divide-y divide-zinc-50 text-sm">
               {isLoading ? (
-                <tr><td colSpan="5" className="py-20 text-center text-sm font-bold text-zinc-300">Sinkronisasi...</td></tr>
+                <tr><td colSpan="5" className="py-20 text-center font-bold text-zinc-300">Sinkronisasi...</td></tr>
               ) : filteredData.length > 0 ? (
                 filteredData.map((s) => (
-                  <tr key={s.id} className="group hover:bg-zinc-50/50 transition-all">
+                  <tr key={s.id} className="group hover:bg-zinc-50/30 transition-all">
                     <td className="px-8 py-6">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase">{s.noSurat}</span>
-                        <span className="text-sm font-bold text-zinc-800">{s.perihal}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter">{s.noSurat}</span>
+                        <span className="font-bold text-zinc-800">{s.perihal}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-6 text-sm font-semibold text-zinc-500">{s.tanggal}</td>
+                    <td className="px-6 py-6 font-semibold text-zinc-500">{s.tanggal}</td>
                     <td className="px-6 py-6 text-center">
-                      <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold ${
-                        (s.status === 'Masuk' || s.status === 'Pengurus') ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                        (s.status === 'Masuk' || s.status === 'Pengurus') ? 'bg-indigo-50 text-indigo-600 border border-indigo-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                       }`}>
                         {s.status}
                       </span>
@@ -192,35 +203,35 @@ const RekapSurat = () => {
                         {s.fileType === 'pdf' && <FileText size={16} className="text-rose-500" />}
                         {s.fileType === 'image' && <ImageIcon size={16} className="text-blue-500" />}
                         {s.isiManual && <Type size={16} className="text-zinc-400" />}
-                        <button onClick={() => handleViewFile(s)} className="text-[11px] font-bold text-zinc-800 hover:underline">
+                        <button onClick={() => handleViewFile(s)} className="text-[10px] font-black text-zinc-900 border-b-2 border-zinc-200 hover:border-black transition-all">
                           LIHAT
                         </button>
                       </div>
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <button onClick={() => { if(window.confirm("Hapus?")) deleteDoc(doc(db, activeTab === 'surat' ? "rekap_surat" : "rekap_absen", s.id)) }} 
-                        className="p-3 text-zinc-200 hover:text-rose-500 transition-all"><Trash2 size={18} /></button>
+                      <button onClick={() => { if(window.confirm("Hapus data ini secara permanen?")) deleteDoc(doc(db, activeTab === 'surat' ? "rekap_surat" : "rekap_absen", s.id)) }} 
+                        className="p-3 text-zinc-200 hover:text-rose-500 transition-all active:scale-90"><Trash2 size={18} /></button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan="5" className="py-32 text-center text-zinc-300 font-bold text-sm">Belum ada data.</td></tr>
+                <tr><td colSpan="5" className="py-32 text-center text-zinc-300 font-bold">Belum ada data tersedia.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* MODAL */}
+      {/* MODAL TAMBAH DATA */}
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
-          <div className="bg-white w-full max-w-xl rounded-t-[32px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[95vh]">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setShowModal(false)}></div>
+          <div className="bg-white w-full max-w-xl rounded-t-[40px] sm:rounded-[40px] p-8 md:p-10 relative z-10 shadow-2xl overflow-y-auto max-h-[92vh] transition-all border-t border-zinc-100">
             <div className="flex justify-between items-center mb-8">
-               <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">
-                {activeTab === 'surat' ? 'Tambah Arsip Surat' : 'Tambah Rekap Absensi'}
+               <h2 className="text-xl font-bold text-zinc-900 tracking-tight">
+                {activeTab === 'surat' ? 'Arsip Surat Baru' : 'Rekap Absen Baru'}
                </h2>
-               <button onClick={() => setShowModal(false)} className="p-2 bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white rounded-full transition-all">
+               <button onClick={() => setShowModal(false)} className="p-2.5 bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white rounded-full transition-all active:scale-90">
                  <X size={20} />
                </button>
             </div>
@@ -229,7 +240,7 @@ const RekapSurat = () => {
               <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
                 {(activeTab === 'surat' ? ['Masuk', 'Keluar'] : ['Anggota', 'Pengurus']).map((type) => (
                   <button key={type} type="button" onClick={() => setFormData({...formData, status: type})}
-                    className={`flex-1 py-3.5 rounded-xl text-xs font-bold transition-all ${formData.status === type ? 'bg-white text-black shadow-sm' : 'text-zinc-400'}`}>
+                    className={`flex-1 py-3.5 rounded-xl text-xs font-black transition-all ${formData.status === type ? 'bg-white text-black shadow-sm' : 'text-zinc-400'}`}>
                     {type} 
                   </button>
                 ))}
@@ -237,49 +248,55 @@ const RekapSurat = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
                     {activeTab === 'surat' ? 'No. Surat' : 'Periode (Bulan/Tahun)'}
                   </label>
-                  <input type="text" placeholder={activeTab === 'surat' ? "..." : "JANUARI 2026"} className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-bold text-sm" 
+                  {/* text-base (16px) untuk ANTI ZOOM HP */}
+                  <input type="text" placeholder={activeTab === 'surat' ? "..." : "JANUARI 2026"} 
+                    className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-bold" 
                     value={formData.noSurat} onChange={(e) => setFormData({...formData, noSurat: e.target.value})} required />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
                     {activeTab === 'surat' ? 'Tanggal Surat' : 'Tanggal Upload'}
                   </label>
-                  <input type="date" className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-bold text-sm text-zinc-500" 
+                  <input type="date" 
+                    className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-bold text-zinc-600" 
                     value={formData.tanggal} onChange={(e) => setFormData({...formData, tanggal: e.target.value})} required />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">
                   {activeTab === 'surat' ? 'Keterangan / Perihal' : 'Keterangan Tambahan'}
                 </label>
-                <input type="text" placeholder="..." className="w-full p-4 bg-zinc-50 rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-semibold text-sm" 
+                <input type="text" placeholder="..." 
+                  className="w-full p-4.5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-2xl outline-none text-base font-semibold" 
                   value={formData.perihal} onChange={(e) => setFormData({...formData, perihal: e.target.value})} />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">
-                  {activeTab === 'surat' ? 'File PDF / Foto' : 'File Absen (PDF)'}
-                </label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Upload File Dokumen</label>
                 <div className="relative group">
                   <input type="file" accept=".pdf,image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                  <div className={`w-full p-6 border-2 border-dashed rounded-[28px] flex flex-col items-center justify-center gap-2 transition-all ${formData.fileName ? 'border-zinc-900 bg-zinc-50' : 'border-zinc-200 bg-zinc-50'}`}>
-                    <Download size={20} className={formData.fileName ? 'text-black' : 'text-zinc-400'} />
-                    <p className="text-[11px] font-bold text-zinc-600">{formData.fileName || (activeTab === 'surat' ? "Pilih File" : "Pilih File PDF")}</p>
+                  <div className={`w-full p-8 border-2 border-dashed rounded-[32px] flex flex-col items-center justify-center gap-3 transition-all ${formData.fileName ? 'border-black bg-zinc-50' : 'border-zinc-200 bg-zinc-50'}`}>
+                    <Download size={24} className={formData.fileName ? 'text-black' : 'text-zinc-300'} />
+                    <div className="text-center">
+                      <p className="text-[11px] font-black text-zinc-900">{formData.fileName || "Pilih File (PDF/Gambar)"}</p>
+                      <p className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-tighter">Maksimal 2MB</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 ml-1">Atau Ketik Manual</label>
-                <textarea rows="3" placeholder="Ketik ringkasan di sini..." className="w-full p-4 bg-zinc-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-zinc-200 font-medium text-sm text-zinc-700 resize-none" 
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Ringkasan Isi (Opsional)</label>
+                <textarea rows="4" placeholder="Ketik ringkasan jika tidak ada file..." 
+                  className="w-full p-5 bg-zinc-50 border border-transparent focus:border-zinc-200 rounded-[28px] outline-none text-base font-medium text-zinc-700 resize-none" 
                   value={formData.isiManual} onChange={(e) => setFormData({...formData, isiManual: e.target.value})} />
               </div>
 
-              <button type="submit" className="w-full bg-black text-white p-5 rounded-[24px] font-bold text-sm shadow-xl hover:bg-zinc-800 transition-all active:scale-95">
+              <button type="submit" className="w-full bg-black text-white p-5 rounded-[28px] font-black text-xs tracking-widest shadow-xl shadow-zinc-200 hover:bg-zinc-800 transition-all active:scale-95 uppercase">
                 Simpan ke Database
               </button>
             </form>
