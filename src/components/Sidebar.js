@@ -1,137 +1,145 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom'; 
 import {
   LayoutDashboard,
+  FileText,
   Users,
-  UserPlus,
-  Archive,
   BookOpen,
+  PieChart,
   Menu,
   X,
-  ChevronRight
+  // ChevronRight dihapus dari sini untuk menghilangkan warning eslint
+  ShieldCheck
 } from 'lucide-react';
 
 import logoImg from '../assets/logo-tarka.jpeg';
 
 const Sidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
-
-  const menu = [
-    { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20}/> },
-    { name: 'Rekap Surat', path: '/rekap-surat', icon: <Archive size={20}/> },
-    { name: 'Data Anggota', path: '/data-anggota', icon: <Users size={20}/> },
-    { name: 'Notulensi Rapat', path: '/notulensi', icon: <BookOpen size={20}/> },
-    { name: 'Laporan Kerja', path: '/laporan', icon: <UserPlus size={20}/> },
-  ];
-
   const isActive = (path) => location.pathname === path;
 
-  const formatText = (text) => {
-    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
-  };
+  const mainMenus = [
+    { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20}/> },
+    { name: 'Arsip Surat', path: '/rekap-surat', icon: <FileText size={20}/> },
+    { name: 'Database Anggota', path: '/data-anggota', icon: <Users size={20}/> },
+    { name: 'Buku Notulensi', path: '/notulensi', icon: <BookOpen size={20}/> },
+    { name: 'Laporan Berkala', path: '/laporan', icon: <PieChart size={20}/> },
+  ];
+
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <>
-      {/* MOBILE HEADER - Z-Index ditingkatkan agar tombol tetap bisa diklik */}
-      <div className="md:hidden flex items-center justify-between bg-black text-white px-6 py-5 fixed w-full top-0 z-[130] border-b border-white/10 shadow-xl">
+      {/* --- PREMIUM MOBILE HEADER --- */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-zinc-200 px-5 flex items-center justify-between z-50 md:hidden">
         <div className="flex items-center gap-3">
-          <img src={logoImg} alt="Logo" className="w-8 h-8 rounded-lg border border-white/20" />
-          <span className="font-bold tracking-tighter text-xs uppercase">SEKRE KARTA 18</span>
+          <div className="w-9 h-9 rounded-lg overflow-hidden border border-zinc-200 shadow-sm">
+            <img src={logoImg} alt="Logo" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col justify-center">
+            <span className="text-[13px] font-black text-zinc-900 uppercase leading-none tracking-tight">
+              Sekretaris Karta
+            </span>
+            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-[0.1em] mt-0.5">
+              Sistem Administrasi
+            </span>
+          </div>
         </div>
         <button 
-          onClick={() => setOpen(!open)} 
-          className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition-all border border-white/10 active:scale-95"
-          aria-label="Toggle Menu"
+          onClick={toggleSidebar} 
+          className="p-2.5 bg-zinc-900 text-white rounded-xl active:scale-90 transition-all shadow-md shadow-zinc-200"
         >
-          {open ? <X size={20} className="text-white"/> : <Menu size={20} className="text-white"/>}
+          <Menu size={20} />
         </button>
-      </div>
+      </header>
 
-      {/* SIDEBAR ASIDE */}
-      <aside
-        className={`fixed top-0 left-0 h-screen w-[280px] bg-black text-white z-[140] border-r border-white/10 transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-        ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 shadow-2xl md:shadow-none`}
-      >
-        <div className="flex flex-col h-full p-6 md:p-8">
+      {/* --- OVERLAY --- */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm z-[55] md:hidden transition-all duration-300" 
+          onClick={toggleSidebar} 
+        />
+      )}
+
+      {/* --- SIDEBAR ASIDE --- */}
+      <aside className={`
+        fixed top-0 left-0 h-screen w-[290px] bg-white z-[60] border-r border-zinc-200
+        transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1)
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:translate-x-0
+      `}>
+        <div className="flex flex-col h-full">
           
-          {/* HEADER SIDEBAR (Mobile Close Button inside) */}
-          <div className="flex items-center justify-between mb-10 md:mb-14">
+          {/* BRANDING SECTION (SIDEBAR) */}
+          <div className="relative px-6 h-28 flex items-center mb-4 border-b border-zinc-50">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl overflow-hidden border border-white/20 bg-white">
-                <img src={logoImg} alt="Logo" className="w-full h-full object-cover" />
+              <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-zinc-100 shadow-lg flex-shrink-0">
+                 <img src={logoImg} alt="Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
-                <h1 className="font-black text-base md:text-lg leading-none tracking-tighter uppercase text-white"> SEKRE KARTA 18</h1>
-                <p className="text-[9px] font-bold text-zinc-500 tracking-[0.2em] mt-1 uppercase">Digital System</p>
+                <h1 className="text-[17px] font-black text-zinc-900 leading-tight uppercase tracking-tighter">
+                  Sekretaris Karta
+                </h1>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <ShieldCheck size={12} className="text-blue-600 fill-blue-50" />
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Adm. Terpusat</p>
+                </div>
               </div>
             </div>
-            
-            {/* Tombol X tambahan khusus di dalam sidebar mobile agar user tidak bingung */}
-            <button onClick={() => setOpen(false)} className="md:hidden p-2 hover:bg-zinc-900 rounded-full transition-colors">
-                <X size={20} className="text-zinc-500" />
+
+            {/* Tombol X (Hanya Mobile) */}
+            <button 
+              onClick={toggleSidebar} 
+              className="md:hidden absolute top-8 right-4 p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition-all"
+            >
+              <X size={22} />
             </button>
           </div>
 
-          {/* MENU NAVIGASI */}
-          <nav className="space-y-2 flex-1 overflow-y-auto custom-scrollbar">
-            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-4 px-2">Navigasi Utama</p>
-            {menu.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all duration-300 group ${
-                  isActive(item.path)
-                    ? 'bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.15)] scale-[1.02]'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <span className={`transition-colors duration-300 ${isActive(item.path) ? 'text-black' : 'text-zinc-500 group-hover:text-white'}`}>
-                    {item.icon}
-                  </span>
-                  <span className="text-sm font-semibold tracking-tight">
-                    {formatText(item.name)}
-                  </span>
-                </div>
-                {isActive(item.path) && (
-                  <div className="bg-black/5 p-1 rounded-full">
-                    <ChevronRight size={14} className="text-black" />
-                  </div>
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          {/* FOOTER CARD - Versi Lebih Formal */}
-          <div className="mt-auto pt-6 border-t border-white/10">
-            <div className="bg-zinc-900/50 p-5 rounded-[1.5rem] border border-white/5 backdrop-blur-sm">
-              <h2 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Sekretariat Resmi</h2>
-              <p className="text-[11px] text-white leading-relaxed font-medium">
-                RW 18 Permata Hijau<br />
-                <span className="text-zinc-500">Kabupaten Bandung</span>
-              </p>
-              
-              <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                <span className="text-[9px] text-zinc-400 font-black uppercase tracking-tighter">© 2026</span>
-              </div>
+          {/* NAVIGATION SECTION */}
+          <div className="flex-1 overflow-y-auto px-4 py-2">
+            <div className="px-4 mb-4 flex items-center gap-2">
+              <div className="h-[1px] w-4 bg-zinc-200"></div>
+              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Menu Navigasi</p>
             </div>
+            
+            <nav className="space-y-1.5">
+              {mainMenus.map((item) => {
+                const active = isActive(item.path);
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`
+                      flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-300 group
+                      ${active 
+                        ? 'bg-zinc-900 text-white shadow-xl shadow-zinc-200 translate-x-1' 
+                        : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900'}
+                    `}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className={`transition-colors duration-300 ${active ? 'text-blue-400' : 'text-zinc-400 group-hover:text-zinc-900'}`}>
+                        {item.icon}
+                      </span>
+                      <span className={`text-[14px] tracking-tight ${active ? 'font-bold' : 'font-semibold'}`}>
+                        {item.name}
+                      </span>
+                    </div>
+                    {/* Indikator Aktif (Glow Dot) */}
+                    {active && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-
         </div>
       </aside>
 
-      {/* OVERLAY - Efek blur ditingkatkan agar lebih premium */}
-      {open && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-md z-[135] md:hidden transition-opacity duration-300"
-          onClick={() => setOpen(false)}
-        />
-      )}
+      <div className="h-16 md:hidden" />
     </>
   );
 };
