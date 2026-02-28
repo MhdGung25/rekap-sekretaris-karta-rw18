@@ -169,32 +169,44 @@ const Notulensi = () => {
       <div className="max-w-6xl mx-auto">
         
         {/* HEADER SECTION */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-          <div className="flex items-center gap-4">
-            <img src={logoTarka} alt="Logo" className="w-14 h-14 rounded-2xl shadow-sm object-cover" />
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Sekretariat Digital</span>
-              </div>
-              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
-                {activeTab === 'list' ? 'Arsip Notulensi' : 'Buat Notulensi'}
-              </h1>
-            </div>
-          </div>
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+  <div className="flex items-center gap-4">
+    <img src={logoTarka} alt="Logo" className="w-12 h-12 md:w-14 md:h-14 rounded-xl shadow-sm object-cover border border-zinc-100" />
+    <div>
+      <div className="flex items-center gap-2 mb-0.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Sekretariat Digital</span>
+      </div>
+      <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-zinc-900 leading-tight">
+        {activeTab === 'list' ? 'Arsip Notulensi' : 'Buat Notulensi'}
+      </h1>
+    </div>
+  </div>
 
-          {/* TAB SWITCHER */}
-          <div className="flex bg-zinc-200/50 p-1.5 rounded-2xl border border-zinc-200 w-full md:w-auto">
-            <button onClick={() => setActiveTab('list')}
-              className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-black transition-all uppercase flex items-center justify-center gap-2 ${activeTab === 'list' ? 'bg-white shadow-md text-black' : 'text-zinc-500 hover:text-zinc-700'}`}>
-              <History size={16}/> Riwayat
-            </button>
-            <button onClick={() => setActiveTab('form')}
-              className={`flex-1 md:flex-none px-6 py-3 rounded-xl text-xs font-black transition-all uppercase flex items-center justify-center gap-2 ${activeTab === 'form' ? 'bg-white shadow-md text-black' : 'text-zinc-500 hover:text-zinc-700'}`}>
-              <Plus size={16}/> Baru
-            </button>
-          </div>
-        </div>
+  {/* TAB SWITCHER - UKURAN STANDAR & RAPIH */}
+  <div className="flex bg-zinc-100 p-1 rounded-2xl border border-zinc-200 w-full md:w-auto min-w-[280px]">
+    <button 
+      onClick={() => setActiveTab('list')}
+      className={`flex-1 px-5 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase flex items-center justify-center gap-2 tracking-widest ${
+        activeTab === 'list' 
+        ? 'bg-white shadow-sm text-black border border-zinc-200/50' 
+        : 'text-zinc-400 hover:text-zinc-600'
+      }`}
+    >
+      <History size={14}/> RIWAYAT
+    </button>
+    <button 
+      onClick={() => setActiveTab('form')}
+      className={`flex-1 px-5 py-2.5 rounded-xl text-[10px] font-black transition-all uppercase flex items-center justify-center gap-2 tracking-widest ${
+        activeTab === 'form' 
+        ? 'bg-white shadow-sm text-black border border-zinc-200/50' 
+        : 'text-zinc-400 hover:text-zinc-600'
+      }`}
+    >
+      <Plus size={14}/> BARU
+    </button>
+  </div>
+</div>
 
         {activeTab === 'list' ? (
           <div className="animate-in fade-in duration-500">
